@@ -145,6 +145,49 @@ app.post('/register', (req, res) => {
     .catch(err => res.status(400).json('unable to register'))
 })
 
+app.put('/edit_user', (req, res) => {
+    const {oldEmail, newFirst, newLast, newEmail, newPhone, newStreet1, newStreet2, newCity, newCountry, newState, newZip} = req.body
+    db('login').where('email', '=', oldEmail)
+    .update({
+        email: newEmail
+    })
+    .returning('*')
+    .then(data => {
+        return db('users').where('email', '=', oldEmail)
+        .update({
+            first_name: newFirst,
+            last_name: newLast,
+            phone: newPhone,
+            email: newEmail,
+            street1: newStreet1,
+            street2: newStreet2,
+            city: newCity,
+            country: newCountry,
+            state: newState,
+            zip: newZip
+        })
+        .returning('*')
+        .then(data => res.json(data))
+    })
+})
+
+app.put('/edit_password', (req, res) => {
+    const {email, oldPassword, newPassword} = req.body
+    db.select('*').from('login').where('email', '=', email)
+    .then(data => {
+        const isValid = bcrypt.compareSync(oldPassword, data[0].hash)
+        if(isValid) {
+            const hash = bcrypt.hashSync(newPassword)
+            db('login').where('email', '=', email)
+                .update({
+                    hash: hash
+                })
+                .returning('*')
+                .then(data => res.json(data))
+        }
+    })
+})
+
 app.get('/items', (req, res) => {
     res.json(db.items[0])
 })
