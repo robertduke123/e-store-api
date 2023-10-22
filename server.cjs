@@ -3,81 +3,21 @@ const bodyparser = require('body-parser')
 const bcrypt = require('bcrypt-nodejs')
 const cors = require('cors')
 const knex = require('knex')
-const { stat } = require('fs')
 
 const app = express()
 app.use(bodyparser.json())
 app.use(cors())
 
-// const db = knex({
-//   client: 'pg',
-//   connection: {
-//     host: '127.0.0.1',
-//     user: 'postgres',
-//     password: 'Wiggles123',
-//     database: 'e-store'
-//   }
-// });
+const db = knex({
+  client: 'pg',
+  connection: {
+    host: '127.0.0.1',
+    user: 'postgres',
+    password: 'Wiggles123',
+    database: 'e-store'
+  }
+});
 
-const db = {
-        items: [
-            {   
-                id: 0,
-                image: 'https://hnsfpau.imgix.net/5/images/detailed/165/18569AU.1.jpg?fit=fill&bg=0FFF&w=785&h=441&auto=format,compress',
-                name: 'Kettle',
-                category: 'newArrivals',
-                description: 'Electric kettle.',
-                price: '$40.00',
-                reviews: [
-                    {
-                        stars: [true, true, true, true, true],
-                        review: 'this is pretty good'
-                    },
-                    {
-                        stars: [true, true, false, false, false],
-                        review: 'this sucks'
-                    }
-                ]
-            },
-            {   
-                id: 1,
-                image: 'https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/peripherals/input-devices/dell/keyboards/aw420k/media-gallery/keyboard-aw420k-xkb-05-bk-gallery-01.psd?fmt=png-alpha&pscan=auto&scl=1&hei=402&wid=1389&qlt=100,1&resMode=sharp2&size=1389,402&chrss=full',
-                name: 'Keyboard',
-                category: 'bestSellers',
-                description: 'Keyboard with LEDs',
-                price: '$70.00',
-                reviews: [
-                    {
-                        stars: [true, true, true, true, true],
-                        review: 'this is pretty good'
-                    },
-                    {
-                        stars: [true, true, false, false, false],
-                        review: 'this sucks'
-                    }
-                ]
-            },
-            {   
-                id: 2,
-                image: 'https://m.media-amazon.com/images/I/51GWerTmfPL._AC_SX679_.jpg',
-                name: 'Spider-Man Mask',
-                category: 'topRated',
-                description: 'Keyboard with LEDs',
-                price: '$60.00',
-                reviews: [
-                    {
-                        stars: [true, true, true, true, true],
-                        review: 'this is pretty good'
-                    },
-                    {
-                        stars: [true, true, false, false, false],
-                        review: 'this sucks'
-                    }
-                ]
-            },
-        ],
-    
-}
 
 app.get('/', (req,res) => {
     res.json('it is working!')
@@ -108,7 +48,7 @@ app.post('/signin', (req, res) => {
 })
 
 app.post('/register', (req, res) => {
-    const {firstName, lastName, email, phone, street1, street2, city, country, state, zip, password} = req.body
+    const {firstName, lastName, email, phone, address, city, zip, password} = req.body
     if(!email || !firstName || !lastName || !password) {
         res.status(400).json('incorrect form submission')
     }
@@ -128,11 +68,8 @@ app.post('/register', (req, res) => {
                     last_name: lastName,
                     phone: phone,
                     email: loginEmail[0].email,
-                    street1: street1,
-                    street2: street2,
+                    address: address,
                     city: city,
-                    country: country,
-                    state: state,
                     zip: zip
                 })
                 .then(user => {
@@ -146,28 +83,25 @@ app.post('/register', (req, res) => {
 })
 
 app.put('/edit_user', (req, res) => {
-    const {oldEmail, newFirst, newLast, newEmail, newPhone, newStreet1, newStreet2, newCity, newCountry, newState, newZip} = req.body
-    db('login').where('email', '=', oldEmail)
+    const {id, newFirst, newLast, newEmail, newPhone, newAddress, newCity, newZip} = req.body
+    db('login').where('id', '=', id)
     .update({
         email: newEmail
     })
     .returning('*')
     .then(data => {
-        return db('users').where('email', '=', oldEmail)
+        return db('users').where('id', '=', id)
         .update({
             first_name: newFirst,
             last_name: newLast,
             phone: newPhone,
             email: newEmail,
-            street1: newStreet1,
-            street2: newStreet2,
+            address: newAddress,    
             city: newCity,
-            country: newCountry,
-            state: newState,
             zip: newZip
         })
         .returning('*')
-        .then(data => res.json(data))
+        .then(data => res.json(data[0]))
     })
 })
 
@@ -185,6 +119,18 @@ app.put('/edit_password', (req, res) => {
                 .returning('*')
                 .then(data => res.json(data))
         }
+    })
+})
+
+app.put('/reviews', (req, res) => {
+    const {id, stars, review} = req.body
+    db.select('*').from('reviews')
+    .then(data => {
+        data.forEach((row) => {
+            console.log(data);
+            row.id === id
+            db.select('*')
+        })
     })
 })
 
