@@ -106,30 +106,53 @@ app.put('/edit_user', (req, res) => {
 })
 
 app.put('/edit_password', (req, res) => {
-    const {email, oldPassword, newPassword} = req.body
-    db.select('*').from('login').where('email', '=', email)
+    const {id, oldPassword, newPassword} = req.body
+    db.select('*').from('login').where('id', '=', id)
     .then(data => {
         const isValid = bcrypt.compareSync(oldPassword, data[0].hash)
         if(isValid) {
             const hash = bcrypt.hashSync(newPassword)
-            db('login').where('email', '=', email)
+            db('login').where('id', '=', id)
                 .update({
                     hash: hash
                 })
-                .returning('*')
-                .then(data => res.json(data))
+                .then(res.json('change password successful'))
         }
     })
 })
 
 app.put('/reviews', (req, res) => {
-    const {id, stars, review} = req.body
+    const {product_id, stars, review} = req.body
     db.select('*').from('reviews')
     .then(data => {
+        let count = 0
         data.forEach((row) => {
-            console.log(data);
-            row.id === id
-            db.select('*')
+            if(row.product_id === product_id){
+                count ++
+                db.select('*').from('reviews').where({id: id})
+                .update({
+                    starOne: [...row.starOne, stars[0]],                
+                    starTwo: [...row.starTwo, stars[1]],                
+                    starThree: [...row.starThree, stars[2]],
+                    starFour: [...row.starFour, stars[3]],
+                    starFive: [...row.starFive, stars[4]],
+                    text: [...row.text, review]
+                }).returning('*')
+                .then(data => res.json(data[0]))
+            } else if(count = 1){
+                db.insert({
+                    product_id: product_id,
+                    starOne: [stars[0]],                
+                    starTwo: [stars[1]],                
+                    starThree: [stars[2]],
+                    starFour: [stars[3]],
+                    starFive: [stars[4]],
+                    text: [...row.text, review]
+                }).into('reviews')
+                .returning('*')
+                .then(data => res.json(data[0]))
+            }
+            count = 0
         })
     })
 })
