@@ -125,40 +125,43 @@ app.put('/reviews', (req, res) => {
     const {product_id, stars, review} = req.body
     db.select('*').from('reviews')
     .then(data => {
+        console.log(data);
         let count = 0
         data.forEach((row) => {
             if(row.product_id === product_id){
-                count ++
-                db.select('*').from('reviews').where({id: id})
+                db.select('*').from('reviews').where({product_id: product_id})
                 .update({
-                    starOne: [...row.starOne, stars[0]],                
-                    starTwo: [...row.starTwo, stars[1]],                
-                    starThree: [...row.starThree, stars[2]],
-                    starFour: [...row.starFour, stars[3]],
-                    starFive: [...row.starFive, stars[4]],
-                    text: [...row.text, review]
+                    star_one: [...row.star_one, stars[0]],                
+                    star_two: [...row.star_two, stars[1]],                
+                    star_three: [...row.star_three, stars[2]],
+                    star_four: [...row.star_four, stars[3]],
+                    star_five: [...row.star_five, stars[4]],
+                    review_text: [...row.review_text, review]
                 }).returning('*')
                 .then(data => res.json(data[0]))
-            } else if(count = 1){
+            } else { count ++ }
+     })
+     if(count === 1 || data.length === 0) {
                 db.insert({
                     product_id: product_id,
-                    starOne: [stars[0]],                
-                    starTwo: [stars[1]],                
-                    starThree: [stars[2]],
-                    starFour: [stars[3]],
-                    starFive: [stars[4]],
-                    text: [...row.text, review]
+                    star_one: [stars[0]],                
+                    star_two: [stars[1]],                
+                    star_three: [stars[2]],
+                    star_four: [stars[3]],
+                    star_five: [stars[4]],
+                    review_text: [review]
                 }).into('reviews')
                 .returning('*')
                 .then(data => res.json(data[0]))
             }
             count = 0
-        })
     })
 })
 
-app.get('/items', (req, res) => {
-    res.json(db.items[0])
+app.put('/get_reviews', (req, res) => {
+    const {product_id} = req.body
+    db.select('*').from('reviews').where({product_id: product_id})
+    .then(data => res.json(data[0]))
 })
 
 app.put('/add_items', (req, res) => {
