@@ -11,12 +11,23 @@ app.use(cors())
 const db = knex({
   client: 'pg',
   connection: {
-    host: '127.0.0.1',
-    user: 'postgres',
-    password: 'Wiggles123',
-    database: 'e-store'
+    host: 'dpg-cksc3mvd47qs73ck5v2g-a',
+    port: 5432,
+    user: 'e_store_db_user',
+    password: 'yIcdkfi0czGAY8VRIBSfmdqpEM5p3b0W',
+    database: 'e_store_db'
   }
 });
+
+// const db = knex({
+//   client: 'pg',
+//   connection: {
+//     host: '127.0.0.1',
+//     user: 'postgres',
+//     password: 'Wiggles123',
+//     database: 'e-store'
+//   }
+// });
 
 
 app.get('/', (req,res) => {
