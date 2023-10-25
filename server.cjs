@@ -160,14 +160,6 @@ app.put('/reviews', (req, res) => {
 
 app.get('/get_reviews', (req, res) => {
     db.select('*').from('reviews')
-    // .then(data => {
-    //     console.log(data)
-    //     data.forEach(row => {
-    //         console.log(row)
-    //     })
-    // })
-
-    // .where({product_id: product_id})
     .then(data => res.json(data))
     .catch(err => res.status(400).json('no reviews found'))
 })
