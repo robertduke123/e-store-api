@@ -175,13 +175,6 @@ app.get('/get_reviews', (req, res) => {
     .catch(err => res.status(400).json('no reviews found'))
 })
 
-app.put('/add_items', (req, res) => {
-    const { item } = req.body
-
-    db.items.push(item)
-    res.json(db.items)
-})
-
 app.listen(3000, () => {
     console.log('app is running')
 })
